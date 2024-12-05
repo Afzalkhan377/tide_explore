@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Tides Simulation</title>
+  <script src="script.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <title>Jump Over the Tides</title>
+  <style>
+    
+    #gameCanvas {
+  border: 3px solid #004080; /* Darker blue for canvas border */
+  display: block;
+  margin: 20px auto;
+  background: linear-gradient(to bottom, #ADD8E6, #4682B4); /* Sky to ocean gradient */
+}
+
+#gameOverScreen {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(30, 30, 30, 0.9); /* Slightly lighter overlay */
+  color: #F0F0F0; /* Light gray for text */
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#gameOverScreen h1 {
+  font-size: 36px;
+  margin-bottom: 20px;
+  color: #FFD700; /* Gold for Game Over heading */
+}
+
+#gameOverScreen button {
+  font-size: 18px;
+  padding: 10px 20px;
+  background: #1E90FF; /* Bright blue button */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#gameOverScreen button:hover {
+  background: #0077CC; /* Slightly darker blue on hover */
+}
+  </style>
+</head>
+<header class="bg-blue-700 text-white py-6">
+  <h1 class="text-center text-4xl font-bold">Oceanography & Tides</h1>
+  <p class="text-center text-lg mt-2">Explore Jump The Tides</p>
+</header>
+<nav class="navbar">
+  <ul class="nav-list">
+    <li><a href="index.html" class="nav-link">Tidal Simulation</a></li>
+    <li><a href="tide-info.html" class="nav-link">Tide Jumper</a></li>
+  </ul>
+</nav>
+<p class="welcome-text">Welcome to <strong>Tide Jumper</strong>, a game where you have to keep jumping over tides to increase your score.</p>
+<div class="instructions-container">
+  <h2>How to Play</h2>
+  <ul class="instructions-list">
+    <li><strong>Spacebar</strong>: Jump over the tides.</li>
+    <li><strong>Right Arrow Key</strong>: Move to the right.</li>
+    <li><strong>Left Arrow Key</strong>: Move to the left.</li>
+    <li><strong>Objective</strong>: Avoid the tides and survive as long as possible to increase your score!</li>
+  </ul>
+</div>
+<body>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <div id="gameOverScreen">
+    <h1>Game Over</h1>
+    <p>Your score: <span id="finalScore"></span></p>
+    <button onclick="resetGame()">Restart</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Game Variables
+    let player = { x: 50, y: 300, width: 30, height: 50, isJumping: false, jumpSpeed: 0 };
+    let tides = []; // Array to hold multiple tides
+    let gravity = 0.5;
+    let score = 0;
+    let isGameOver = false;
+    let tideSpawnInterval = 2000; // Spawn a new tide every 2 seconds
+    let spawnTimer;
+
+    const gameOverScreen = document.getElementById("gameOverScreen");
+    const finalScore = document.getElementById("finalScore");
+
+    // Function to spawn a new tide
+    function spawnTide() {
+      const newTide = {
+        x: canvas.width, // Start at the right edge of the canvas
+        y: 350,          // Position on the ground
+        width: 80,       // Width of the tide
+        height: 50,      // Height of the tide
+        speed: 5 + Math.random() * 2 // Random initial speed for variation
+      };
+      tides.push(newTide);
+
+      // Adjust spawn rate over time
+      if (tideSpawnInterval > 800) {
+        tideSpawnInterval -= 100; // Decrease spawn interval to make the game harder
+      }
+
+      // Set timeout for the next tide spawn
+      clearTimeout(spawnTimer); // Clear previous timeout to avoid overlaps
+      spawnTimer = setTimeout(spawnTide, tideSpawnInterval);
+    }
+
+    // Draw a tide
+    function drawTide(tide) {
+      ctx.fillStyle = "#1E90FF"; // Blue
+      ctx.beginPath();
+      ctx.moveTo(tide.x, tide.y);
+      for (let i = 0; i < tide.width; i++) {
+        const waveHeight = Math.sin((i + tide.x / 10) * 0.2) * 10;
+        ctx.lineTo(tide.x + i, tide.y + waveHeight);
+      }
+      ctx.lineTo(tide.x + tide.width, canvas.height);
+      ctx.lineTo(tide.x, canvas.height);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Check collision with any tide
+    function checkCollision() {
+      return tides.some((tide) => {
+        // Check horizontal overlap
+        const isOverlappingX = player.x + player.width > tide.x && player.x < tide.x + tide.width;
+
+        if (isOverlappingX) {
+          // Check vertical overlap with the wave
+          for (let i = 0; i < tide.width; i++) {
+            const waveHeight = Math.sin((i + tide.x / 10) * 0.2) * 10;
+            const tideY = tide.y + waveHeight;
+
+            // If the player's feet are below the wave at this point
+            if (
+              player.y + player.height > tideY &&
+              player.x + player.width > tide.x + i &&
+              player.x < tide.x + i + 1
+            ) {
+              return true; // Collision detected
+            }
+          }
+        }
+
+        return false; // No collision
+      });
+    }
+
+    // Draw the player
+    function drawPlayer() {
+      ctx.fillStyle = "#FFD700"; // Yellow
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      // Draw head
+      ctx.beginPath();
+      ctx.arc(player.x + player.width / 2, player.y - 10, 10, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Update Game State
+    function updateGame() {
+      if (isGameOver) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Player Physics
+      if (player.isJumping) {
+        player.y += player.jumpSpeed;
+        player.jumpSpeed += gravity;
+        if (player.y >= 300) {
+          player.y = 300;
+          player.isJumping = false;
+        }
+      }
+
+      // Move and draw tides
+      tides.forEach((tide, index) => {
+        tide.x -= tide.speed;
+
+        // Remove tides that move off-screen
+        if (tide.x + tide.width < 0) {
+          tides.splice(index, 1);
+          score++; // Increase score when a tide goes off-screen
+        }
+
+        drawTide(tide);
+      });
+
+      // Check Collision
+      if (checkCollision()) {
+        isGameOver = true;
+        finalScore.textContent = score;
+        gameOverScreen.style.display = "flex"; // Show Game Over screen
+        return;
+      }
+
+      // Draw Game Elements
+      drawPlayer();
+      ctx.font = "20px Arial";
+      ctx.fillStyle = "#000";
+      ctx.fillText(`Score: ${score}`, 10, 20);
+
+      requestAnimationFrame(updateGame);
+    }
+
+    // Reset Game
+    function resetGame() {
+      player = { x: 50, y: 300, width: 30, height: 50, isJumping: false, jumpSpeed: 0 };
+      tides = [];
+      score = 0;
+      isGameOver = false;
+      gameOverScreen.style.display = "none";
+      tideSpawnInterval = 2000; // Reset spawn interval
+      clearTimeout(spawnTimer); // Clear previous timeout
+      spawnTide(); // Start spawning tides again
+      updateGame();
+    }
+
+    // Handle Jump
+    function jump() {
+      if (!player.isJumping) {
+        player.isJumping = true;
+        player.jumpSpeed = -10; // Initial jump velocity
+      }
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        jump();
+      }
+    });
+    // Movement speed for left and right
+let moveSpeed = 5;
+
+// Event listeners for keydown and keyup
+let keys = {};
+
+window.addEventListener("keydown", (e) => {
+  keys[e.code] = true; // Track pressed keys
+
+  // Handle Jump
+  if (e.code === "Space") {
+    jump();
+  }
+});
+
+window.addEventListener("keyup", (e) => {
+  keys[e.code] = false; // Reset key when released
+});
+
+// Update player position based on keys
+function updatePlayerPosition() {
+  // Move left
+  if (keys["ArrowLeft"] && player.x > 0) {
+    player.x -= moveSpeed;
+  }
+
+  // Move right
+  if (keys["ArrowRight"] && player.x + player.width < canvas.width) {
+    player.x += moveSpeed;
+  }
+}
+
+// Update Game State
+function updateGame() {
+  if (isGameOver) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Player Physics
+  if (player.isJumping) {
+    player.y += player.jumpSpeed;
+    player.jumpSpeed += gravity;
+    if (player.y >= 300) {
+      player.y = 300;
+      player.isJumping = false;
+    }
+  }
+
+  // Update player position based on keys
+  updatePlayerPosition();
+
+  // Move and draw tides
+  tides.forEach((tide, index) => {
+    tide.x -= tide.speed;
+
+    // Remove tides that move off-screen
+    if (tide.x + tide.width < 0) {
+      tides.splice(index, 1);
+      score++; // Increase score when a tide goes off-screen
+    }
+
+    drawTide(tide);
+  });
+
+  // Check Collision
+  if (checkCollision()) {
+    isGameOver = true;
+    finalScore.textContent = score;
+    gameOverScreen.style.display = "flex"; // Show Game Over screen
+    return;
+  }
+
+  // Draw Game Elements
+  drawPlayer();
+  ctx.font = "20px Arial";
+  ctx.fillStyle = "#000";
+  ctx.fillText(`Score: ${score}`, 10, 20);
+
+  requestAnimationFrame(updateGame);
+}
+
+    // Start the game
+    spawnTide();
+    updateGame();
+  </script>
+    <footer class="bg-blue-700 text-white py-4">
+      <p class="text-center">&copy; 2024 Oceanography & Tides</p>
+    </footer>
+  
+</body>
+</html>

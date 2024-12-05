@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Tides Simulation</title>
+  <script src="script.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-blue-50 text-gray-800 font-sans">
+
+  <!-- Header -->
+  <header class="bg-blue-700 text-white py-6">
+    <h1 class="text-center text-4xl font-bold">Oceanography & Tides</h1>
+    <p class="text-center text-lg mt-2">Explore the effects of the Moon and Sun on Earth's tides</p>
+  </header>
+  <nav>
+    <ul>
+      <li><a href="index.html">Tidal Simulation</a></li>
+      <li><a href="tide-info.html">Tide Jumper</a></li>
+    </ul>
+  </nav>
+  <!-- Main Content -->
+  <main class="px-6 py-8 space-y-8">
+
+    <!-- Tidal Simulation -->
+    <section>
+      <h2 class="text-3xl font-semibold text-blue-700 mb-4">Interactive Tidal Simulation</h2>
+      <div class="relative bg-white shadow-md rounded-lg p-6">
+        <canvas id="tideCanvas" class="w-full h-64 rounded-md"></canvas>
+        <p id="tideLabel" class="absolute top-2 left-4 text-blue-700 font-bold"></p>
+        <p id="tideExplanation" class="mt-4 text-gray-700 text-sm">
+          Use the slider below to simulate tide changes and learn how gravitational forces affect water levels.
+        </p>
+        <input id="tideSlider" type="range" min="0" max="100" value="50" class="mt-4 w-full" />
+      </div>
+    </section>
+    <div id="currentSpeedDisplay">Current Speed: 0.00 knots</div>
+
+    <!-- Gravitational Influence -->
+    <section>
+      <h2 class="text-3xl font-semibold text-blue-700 mb-4">Gravitational Influence of the Moon and Sun</h2>
+      <div class="relative bg-white shadow-md rounded-lg p-6">
+        <canvas id="gravityCanvas" class="w-full h-72 rounded-md"></canvas>
+        <div class="mt-4 flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <label for="moonPosition" class="block text-gray-700 font-medium">Moon Position (degrees)</label>
+            <input id="moonPosition" type="range" min="0" max="360" value="180" class="w-full" />
+          </div>
+          <div class="flex-1">
+            <label for="sunPosition" class="block text-gray-700 font-medium">Sun Position (degrees)</label>
+            <input id="sunPosition" type="range" min="0" max="360" value="0" class="w-full" />
+          </div>
+        </div>
+        <p id="explanationBox" class="mt-4 text-gray-600 text-sm">
+          Adjust the Moon and Sun positions to observe how their alignment affects tidal forces. Notice stronger pull during alignment (spring tides) and reduced pull at right angles (neap tides).
+        </p>
+      </div>
+    </section>
+
+    <!-- Buttons -->
+    <div class="mt-4 flex justify-center gap-4">
+      <button id="playButton" class="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700">
+        Play Gravitational Animation
+      </button>
+      <button id="stopButton" class="px-4 py-2 bg-red-600 text-white rounded shadow hover:bg-red-700">
+        Stop Gravitational Animation
+      </button>
+  
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-blue-700 text-white py-4">
+    <p class="text-center">&copy; 2024 Oceanography & Tides</p>
+  </footer>
+
+</body>
+</html>

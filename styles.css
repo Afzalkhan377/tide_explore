@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+nav {
+    background-color: #007BFF;
+    padding: 10px;
+  }
+  
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+  }
+  
+  nav ul li {
+    margin: 0 15px;
+  }
+  
+  nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+  }
+  
+  nav ul li a.active {
+    font-weight: bold;
+    border-bottom: 2px solid #FFD700; /* Highlight the active page */
+  }
+  .navbar {
+    background-color:blue
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.nav-list {
+    list-style-type: none; /* Remove bullets */
+    display: flex; /* Display items horizontally */
+    margin: 0;
+    padding: 0;
+    justify-content: center; /* Center the navigation items */
+    gap: 20px; /* Space between navigation items */
+}
+
+.nav-link {
+    text-decoration: none; /* Remove underline */
+    color: white; /* White text */
+    font-size: 16px; /* Standard font size */
+    font-weight: bold;
+    text-transform: uppercase; /* Uppercase letters */
+    transition: color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+}
+
+.nav-link:hover {
+    color: #d4f8d4; /* Lighter green on hover */
+    transform: scale(1.1); /* Slight zoom effect */
+}
+
+/* Welcome Text */
+.welcome-text {
+    font-size: 18px; /* Slightly larger font */
+    color: #333; /* Dark gray for readability */
+    text-align: center; /* Center-align the text */
+    margin-top: 20px; /* Add spacing from the navbar */
+    line-height: 1.5; /* Better line spacing */
+}
